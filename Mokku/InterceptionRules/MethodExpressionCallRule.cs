@@ -1,20 +1,17 @@
 ﻿using Mokku.Extensions;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Mokku.InterceptionRules;
 
 internal class MethodExpressionCallRule(ParsedExpression expression) : IInterceptionRule
 {
+    private static readonly Action<IFakeObjectCall> DefaultApplyAction = call => call.SetReturnValue(call.MethodInfo.ReturnType.GetDefaultValue());
+
     private readonly ParsedExpression _expression = expression;
 
     public void Apply(IFakeObjectCall fakeObjectCall)
     {
-        
+        DefaultApplyAction.Invoke(fakeObjectCall);
     }
 
     public bool CanBeAppliedTo(IFakeObjectCall fakeObjectCall)

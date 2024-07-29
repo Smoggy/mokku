@@ -19,4 +19,3 @@ A.CallTo(() => fake.StringInput(A<string>.Ignored)).DoesNothing();
 A.CallTo(() => fake.BoolReturn()).Throws(() => new ArgumentException());
 
 ReadLine();
-

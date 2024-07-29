@@ -2,6 +2,7 @@
 using Mokku.InterceptionRules;
 using System.Linq.Expressions;
 using System.Reflection;
+using System.Security.Cryptography;
 
 namespace Mokku;
 
@@ -143,6 +144,16 @@ class CastleInvocationAdapter : IFakeObjectCall
     public IEnumerable<object> Arguments { get; }
 
     public object FakeObject => _invocation.Proxy;
+
+    public void CallBaseMethod()
+    {
+        _invocation.Proceed();
+    }
+
+    public void SetReturnValue(object? value)
+    {
+        _invocation.ReturnValue = value;
+    }
 }
 
 interface IFakeObjectCall
@@ -150,4 +161,6 @@ interface IFakeObjectCall
     MethodInfo MethodInfo { get; }
     IEnumerable<object> Arguments { get; }
     object FakeObject { get; }
+    void SetReturnValue(object? value);
+    void CallBaseMethod();
 }
