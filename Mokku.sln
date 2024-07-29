@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.8.34322.80
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Mokku", "Mokku.csproj", "{F60E3680-0215-46DB-B460-5DC5ECEF66B5}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Mokku", ".\Mokku\Mokku.csproj", "{F60E3680-0215-46DB-B460-5DC5ECEF66B5}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SimpleConsole", ".\SimpleConsole\SimpleConsole.csproj", "{9E1F3727-CBE4-4DCC-BBE2-A6870CABB516}"
 EndProject

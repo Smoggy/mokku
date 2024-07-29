@@ -12,7 +12,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Mokku.csproj" />
+    <ProjectReference Include="..\Mokku\Mokku.csproj" />
   </ItemGroup>
 
 </Project>

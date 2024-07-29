@@ -2,9 +2,9 @@
 
 namespace Mokku;
 
-class FakeCallProcessor : IFakeCallProcessor
+class FakeCallProcessor(List<IInterceptionRule> rules) : IFakeCallProcessor
 {
-    private readonly List<IInterceptionRule> allRules = [];
+    private readonly List<IInterceptionRule> allRules = rules;
 
     public void Process(IFakeObjectCall fakeObjectCall)
     {

@@ -1,4 +1,5 @@
 ﻿using Castle.DynamicProxy;
+using Mokku.InterceptionRules;
 using System.Linq.Expressions;
 using System.Reflection;
 
@@ -7,6 +8,7 @@ namespace Mokku;
 public class Mock<T> where T : class
 {
     private T fakeObject;
+    private readonly List<IInterceptionRule> rules = [];
 
     public Mock()
     {
@@ -15,14 +17,20 @@ public class Mock<T> where T : class
 
     public Mock<T> WithCallTo(Expression<Action<T>> methodCallExpression, Action<IVoidConfiguration> configuration)
     {
+        var expressionParser = new MethodExpressionParser();
+        var parsedExpression = expressionParser.ParseExpression(methodCallExpression);
 
+        rules.Add(new MethodExpressionCallRule(parsedExpression));
 
         return this;
     }
 
     public Mock<T> WithCallTo<TMember>(Expression<Func<T, TMember>> expression, Action<IReturnValueConfiguration<TMember>> configuration)
     {
-        var a = expression.Body as MethodCallExpression;
+        var expressionParser = new MethodExpressionParser();
+        var parsedExpression = expressionParser.ParseExpression(expression);
+
+        rules.Add(new MethodExpressionCallRule(parsedExpression));
 
         return this;
     }
@@ -32,9 +40,9 @@ public class Mock<T> where T : class
         return fakeObject;
     }
 
-    private static object Create(Type proxyType)
+    private object Create(Type proxyType)
     {
-        var result = CastleDynamicProxyCreator.GenerateProxyForType(proxyType, Type.EmptyTypes, new FakeCallProcessorProvider());
+        var result = CastleDynamicProxyCreator.GenerateProxyForType(proxyType, Type.EmptyTypes, new FakeCallProcessorProvider(rules));
 
         if (result.IsSuccess) return result.ProxyObject!;
 
@@ -44,9 +52,9 @@ public class Mock<T> where T : class
 
 class MethodExpressionParser
 {
-    public ParsedExpression ParseExpression<T, TMember>(Expression<Func<T, TMember>> expression)
+    public ParsedExpression ParseExpression(LambdaExpression expression)
     {
-        return null;
+        return Parse(expression);
     }
 
     private ParsedExpression Parse(LambdaExpression expression)

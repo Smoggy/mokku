@@ -11,6 +11,8 @@ var mock = new Mock<ITest>()
     .WithCallTo(x => x.BoolReturn(), configuration => configuration.Returns(true))
     .Build();
 
+mock.BoolReturn();
+
 
 var fake = A.Fake<ITest>();
 A.CallTo(() => fake.StringInput(A<string>.Ignored)).DoesNothing();
