@@ -1,0 +1,32 @@
+﻿using Castle.DynamicProxy;
+using Mokku.Interfaces;
+using System.Reflection;
+
+namespace Mokku;
+
+class CastleInvocationAdapter : IFakeObjectCall
+{
+    private readonly IInvocation _invocation;
+
+    public CastleInvocationAdapter(IInvocation invocation)
+    {
+        _invocation = invocation;
+        Arguments = _invocation.Arguments;
+    }
+
+    public MethodInfo MethodInfo => _invocation.Method;
+
+    public object?[] Arguments { get; }
+
+    public object FakeObject => _invocation.Proxy;
+
+    public void CallBaseMethod()
+    {
+        _invocation.Proceed();
+    }
+
+    public void SetReturnValue(object? value)
+    {
+        _invocation.ReturnValue = value;
+    }
+}

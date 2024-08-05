@@ -13,9 +13,8 @@ var mock = new Mock<ITest>()
 
 mock.BoolReturn();
 
-
 var fake = A.Fake<ITest>();
 A.CallTo(() => fake.StringInput(A<string>.Ignored)).DoesNothing();
-A.CallTo(() => fake.BoolReturn()).Throws(() => new ArgumentException());
+A.CallTo(() => fake.BoolReturn("")).ReturnsLazily((string t) => true);
 
 ReadLine();

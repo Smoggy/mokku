@@ -34,4 +34,5 @@ public interface ITest
 {
     public void StringInput(string str);
     public bool BoolReturn();
+    public bool BoolReturn(string t);
 }

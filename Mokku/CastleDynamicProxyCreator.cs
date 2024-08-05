@@ -1,21 +1,24 @@
 ﻿using Castle.DynamicProxy;
 using Mokku.Interfaces;
+using System.Reflection;
 
 namespace Mokku;
 
 internal static class CastleDynamicProxyCreator
 {
     private static readonly ProxyGenerator proxyGenerator = new();
+    private static readonly IProxyGenerationHook ProxyGenerationHook = new InterceptEverythingHook();
 
-    public static ProxyCreationResult GenerateProxyForType(Type proxyType, Type[] additionalInterfaces, IFakeCallProcessorProvider fakeCallProcessorProvider)
+    public static ProxyCreationResult GenerateProxyForType(Type proxyType, IReadOnlyList<Type> additionalInterfaces, IFakeCallProcessorProvider fakeCallProcessorProvider)
     {
-        var options = new ProxyGenerationOptions();
+        var options = new ProxyGenerationOptions(ProxyGenerationHook);
         var arguments = Array.Empty<object>();
         object? proxy;
         try
         {
             if (proxyType.IsInterface)
             {
+                Type[] a = [proxyType, .. additionalInterfaces];
                 proxy = proxyGenerator.CreateInterfaceProxyWithoutTarget(proxyType, [proxyType, .. additionalInterfaces], options, new ProxyInterceptor(fakeCallProcessorProvider));
             }
             else
@@ -27,7 +30,7 @@ internal static class CastleDynamicProxyCreator
 
                 proxy =  proxyGenerator.CreateClassProxy(
                         proxyType,
-                        additionalInterfaces,
+                        [.. additionalInterfaces],
                         options,
                         arguments,
                         new ProxyInterceptor(fakeCallProcessorProvider));
@@ -38,5 +41,33 @@ internal static class CastleDynamicProxyCreator
         }
 
         return new(proxyObject: proxy);
+    }
+}
+
+internal class InterceptEverythingHook : IProxyGenerationHook
+{
+    private static readonly int HashCode = typeof(InterceptEverythingHook).GetHashCode();
+
+    public void MethodsInspected()
+    {
+    }
+
+    public void NonProxyableMemberNotification(Type type, MemberInfo memberInfo)
+    {
+    }
+
+    public bool ShouldInterceptMethod(Type type, MethodInfo methodInfo)
+    {
+        return true;
+    }
+
+    public override int GetHashCode()
+    {
+        return HashCode;
+    }
+
+    public override bool Equals(object? obj)
+    {
+        return obj is InterceptEverythingHook;
     }
 }

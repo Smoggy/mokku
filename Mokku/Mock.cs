@@ -1,37 +1,51 @@
-﻿using Castle.DynamicProxy;
+﻿using Mokku.ArgumentConstaints;
 using Mokku.InterceptionRules;
+using Mokku.Interfaces;
 using System.Linq.Expressions;
-using System.Reflection;
-using System.Security.Cryptography;
 
 namespace Mokku;
 
 public class Mock<T> where T : class
 {
-    private T fakeObject;
+    private readonly T fakeObject;
+    private readonly IProxyOptions proxyOptions;
     private readonly List<IInterceptionRule> rules = [];
 
     public Mock()
     {
+        proxyOptions = ProxyOptions.Default;
         fakeObject = (T)Create(typeof(T));
     }
 
-    public Mock<T> WithCallTo(Expression<Action<T>> methodCallExpression, Action<IVoidConfiguration> configuration)
+    public Mock(Action<IMockOptions<T>> optionsBuilder)
     {
-        var expressionParser = new MethodExpressionParser();
-        var parsedExpression = expressionParser.ParseExpression(methodCallExpression);
+        proxyOptions = new ProxyOptions();
+        var mockOptions = new MockOptions<T>(proxyOptions);
+        optionsBuilder.Invoke(mockOptions);
 
-        rules.Add(new MethodExpressionCallRule(parsedExpression));
+        fakeObject = (T)Create(typeof(T));
+    }
+
+    public Mock<T> WithCallTo(Expression<Action<T>> methodCallExpression, Action<IVoidConfiguration> configurationBuilder)
+    {
+        var parsedExpression = MethodExpressionParser.ParseExpression(methodCallExpression);
+        var constraints = CreateArgumentConstraints(parsedExpression.ArgumentsExpressions);
+        rules.Add(new MethodExpressionCallRule(parsedExpression, constraints));
 
         return this;
     }
 
-    public Mock<T> WithCallTo<TMember>(Expression<Func<T, TMember>> expression, Action<IReturnValueConfiguration<TMember>> configuration)
+    public Mock<T> WithCallTo<TMember>(Expression<Func<T, TMember>> expression, Action<IReturnValueConfiguration<TMember>> configurationBuilder)
     {
-        var expressionParser = new MethodExpressionParser();
-        var parsedExpression = expressionParser.ParseExpression(expression);
+        var parsedExpression = MethodExpressionParser.ParseExpression(expression);
 
-        rules.Add(new MethodExpressionCallRule(parsedExpression));
+        var constraints = CreateArgumentConstraints(parsedExpression.ArgumentsExpressions);
+        var rule = new MethodExpressionCallRule(parsedExpression, constraints);
+
+        var ruleBuilder = new ReturnValueConfigurationBuilder<TMember>(rule);
+        configurationBuilder.Invoke(ruleBuilder);
+
+        rules.Add(rule);
 
         return this;
     }
@@ -43,124 +57,62 @@ public class Mock<T> where T : class
 
     private object Create(Type proxyType)
     {
-        var result = CastleDynamicProxyCreator.GenerateProxyForType(proxyType, Type.EmptyTypes, new FakeCallProcessorProvider(rules));
+        var result = CastleDynamicProxyCreator.GenerateProxyForType(proxyType, proxyOptions.AdditionalInterfaces, new FakeCallProcessorProvider(rules));
 
         if (result.IsSuccess) return result.ProxyObject!;
 
         throw new InvalidOperationException();
     }
+
+    private static IArgumentConstraint[] CreateArgumentConstraints(ParsedArgumentExpression[] argumentsExpressions)
+    {
+        var argumentConstraintCreator = new ArgumentConstraintCreator(new ConstraintCatchService());
+
+        return argumentsExpressions.Select(argumentConstraintCreator.CreateArgumentConstraintFromArgumentExpression).ToArray();
+    }
 }
 
-class MethodExpressionParser
+class ReturnValueConfigurationBuilder<TMember>(MethodExpressionCallRule rule) : IReturnValueConfiguration<TMember>
 {
-    public ParsedExpression ParseExpression(LambdaExpression expression)
+    private readonly MethodExpressionCallRule rule = rule;
+
+    public void Returns(TMember value)
     {
-        return Parse(expression);
+        rule.SetApplyAction((proxyObj) => proxyObj.SetReturnValue(value));
     }
 
-    private ParsedExpression Parse(LambdaExpression expression)
+    public void Returns(Func<TMember> valueProvider)
     {
-        return expression.Body switch
-        {
-            MethodCallExpression methodExpression => ParseMethodCallExpression(methodExpression),
-            _ => throw new InvalidOperationException()
-        };
+        rule.SetApplyAction((proxyObj) => proxyObj.SetReturnValue(valueProvider()));
     }
 
-    private static ParsedExpression ParseMethodCallExpression(MethodCallExpression expression)
+    public void Throws(Func<Exception> exceptionFactory)
     {
-        var argumentExpressions = new ParsedArgumentExpression[expression.Arguments.Count];
-        var methodParameters = expression.Method.GetParameters();
-        for(var i = 0; i < argumentExpressions.Length; i++)
-        {
-            argumentExpressions[i] = new ParsedArgumentExpression(expression.Arguments[i], methodParameters[i]);
-        }
-
-        return new ParsedExpression(expression.Method, expression.Object!, argumentExpressions);
+        rule.SetApplyAction((_) => throw exceptionFactory());
     }
 
-    private static ParsedExpression ParsePropertyCallExpression(MemberExpression expression)
+    public void Throws<TException>() where TException : Exception, new()
     {
-        var property = expression.Member as PropertyInfo;
-
-        if (property is null)
-        {
-            throw new Exception("Not a property");
-        }
-
-        return new ParsedExpression(property.GetGetMethod(true)!, expression.Expression, Array.Empty<ParsedArgumentExpression>());
+        rule.SetApplyAction((_) => throw new TException());
     }
 }
-
-class ParsedExpression(MethodInfo method, Expression? expression, ParsedArgumentExpression[] argumentExpressions)
-{
-    public MethodInfo Method { get; } = method;
-    public Expression? Expression { get; } = expression;
-    public ParsedArgumentExpression[] ArgumentsExpressions { get; } = argumentExpressions;
-}
-
-class ParsedArgumentExpression(Expression expression, ParameterInfo parameterInfo)
-{
-    public Expression ArgumentExpression { get; } = expression;
-    public ParameterInfo ParameterInfo { get; } = parameterInfo;
-}
-
 
 public interface IReturnValueConfiguration<TMember> : IThrowExceptionConfiguration
 {
     void Returns(TMember value);
+    void Returns(Func<TMember> valueProvider);
 }
 
-public interface IVoidConfiguration : IThrowExceptionConfiguration
-{
-
-}
+public interface IVoidConfiguration : IThrowExceptionConfiguration;
 
 public interface IThrowExceptionConfiguration
 {
     void Throws(Func<Exception> exceptionFactory);
-    void Throws<TException>() where TException : Exception;
-
+    void Throws<TException>() where TException : Exception, new();
 }
 
 interface IInterceptionRule
 {
     bool CanBeAppliedTo(IFakeObjectCall fakeObjectCall);
     void Apply(IFakeObjectCall fakeObjectCall);
-}
-
-class CastleInvocationAdapter : IFakeObjectCall
-{
-    private readonly IInvocation _invocation;
-
-    public CastleInvocationAdapter(IInvocation invocation)
-    {
-        _invocation = invocation;
-        Arguments = _invocation.Arguments;
-    }
-
-    public MethodInfo MethodInfo => _invocation.Method;
-
-    public IEnumerable<object> Arguments { get; }
-
-    public object FakeObject => _invocation.Proxy;
-
-    public void CallBaseMethod()
-    {
-        _invocation.Proceed();
-    }
-
-    public void SetReturnValue(object? value)
-    {
-        _invocation.ReturnValue = value;
-    }
-}
-
-interface IFakeObjectCall
-{
-    MethodInfo MethodInfo { get; }
-    IEnumerable<object> Arguments { get; }
-    object FakeObject { get; }
-    void SetReturnValue(object? value);
-    void CallBaseMethod();
 }
