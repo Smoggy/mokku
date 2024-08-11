@@ -10,21 +10,32 @@ internal class ArgumentConstraintCreator(IConstraintCatchService service)
     {
         if (IsParamArgumentsExpression(expression))
         {
-
+            return CreateParamsArgumentConstraintFromExpression((NewArrayExpression) expression.ArgumentExpression);
         }
 
-        var constraint = CreateArgumentConstraintFromExpression(expression);
+        var constraint = CreateArgumentConstraintFromExpression(expression.ArgumentExpression, expression.ParameterInfo.ParameterType);
 
         return constraint;
     }
 
-    private IArgumentConstraint CreateArgumentConstraintFromExpression(ParsedArgumentExpression expression)
+    private IArgumentConstraint CreateParamsArgumentConstraintFromExpression(NewArrayExpression expression)
     {
-        var constraint = _catchService.TryCatchTheConstraintFromExpression(expression.ArgumentExpression);
+        var constraints = new List<IArgumentConstraint>();
+
+        foreach(var exp in expression.Expressions)
+        {
+            constraints.Add(CreateArgumentConstraintFromExpression(exp, exp.Type));
+        }
+
+        return new AgregatedArgumentConsraint(constraints);
+    }
+
+    private IArgumentConstraint CreateArgumentConstraintFromExpression(Expression expression, Type parameterType)
+    {
+        var constraint = _catchService.TryCatchTheConstraintFromExpression(expression);
 
         if (constraint is ITypedArgumentConstraint typeConstraint)
         {
-            var parameterType = expression.ParameterInfo.ParameterType;
             if (!parameterType.IsAssignableFrom(typeConstraint.ArgumentType))
             {
                 // TODO create exception type
@@ -37,6 +48,6 @@ internal class ArgumentConstraintCreator(IConstraintCatchService service)
 
     private static bool IsParamArgumentsExpression(ParsedArgumentExpression argumentExpression)
     {
-        return argumentExpression.ArgumentExpression is NewArrayExpression && argumentExpression.ParameterInfo.IsDefined(typeof(NewArrayExpression), true);
+        return argumentExpression.ArgumentExpression is NewArrayExpression && argumentExpression.ParameterInfo.IsDefined(typeof(ParamArrayAttribute), true);
     }
 }

@@ -10,6 +10,7 @@ public interface IFoo
     object ObjectReturnMethod();
     int IntProperty { get; }
     string StringProperty { get; set; }
+    int MethodWithParams(params string[] args);
 }
 
 public class TestClass;

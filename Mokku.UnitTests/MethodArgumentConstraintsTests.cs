@@ -37,4 +37,25 @@ public class MethodArgumentConstraintsTests
         Assert.Equal(10, mock.IntReturnWithArguments("test", 6, DateTime.Today));
         Assert.Equal(default, mock.IntReturnWithArguments("aaaa", 2, DateTime.Today));
     }
+
+    [Fact]
+    public void ShouldMatchEveryArgumentConditionForParamsArguments()
+    {
+        var mock = new Mock<IFoo>()
+            .WithCallTo(x => x.MethodWithParams(Is.Any<string>(), Is.Any<string>()), x => x.Returns(10))
+            .Build();
+
+        Assert.Equal(10, mock.MethodWithParams("test", "test"));
+        Assert.Equal(default, mock.MethodWithParams("test"));
+    }
+
+    [Fact]
+    public void ShouldMatchArrayConditionForParamsArguments()
+    {
+        var mock = new Mock<IFoo>()
+            .WithCallTo(x => x.MethodWithParams(Is.Any<string[]>()), x => x.Returns(10))
+            .Build();
+
+        Assert.Equal(10, mock.MethodWithParams("test", "test"));
+    }
 }
