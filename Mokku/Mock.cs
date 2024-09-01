@@ -1,6 +1,8 @@
 ﻿using Mokku.ArgumentConstaints;
+using Mokku.Exceptions;
 using Mokku.InterceptionRules;
 using Mokku.Interfaces;
+using Mokku.RuleConfigurations;
 using System.Linq.Expressions;
 
 namespace Mokku;
@@ -29,8 +31,18 @@ public class Mock<T> where T : class
     public Mock<T> WithCallTo(Expression<Action<T>> methodCallExpression, Action<IVoidConfiguration> configurationBuilder)
     {
         var parsedExpression = MethodExpressionParser.ParseExpression(methodCallExpression);
+
+        var (success, failMessage) = MethodInterceptorValidator.CanBeInterceptedForObject(parsedExpression.Method, typeof(T));
+
+        if (!success) throw new ConfigurationException(failMessage);
+
         var constraints = CreateArgumentConstraints(parsedExpression.ArgumentsExpressions);
-        rules.Add(new MethodExpressionCallRule(parsedExpression, constraints));
+
+        var rule = new MethodExpressionCallRule(parsedExpression, constraints);
+
+        configurationBuilder.Invoke(new VoidConfigurationBuilder(rule));
+
+        rules.Add(rule);
 
         return this;
     }
@@ -39,6 +51,10 @@ public class Mock<T> where T : class
     {
         var parsedExpression = MethodExpressionParser.ParseExpression(expression);
 
+        var (success, failMessage) = MethodInterceptorValidator.CanBeInterceptedForObject(parsedExpression.Method, typeof(T));
+
+        if (!success) throw new ConfigurationException(failMessage);
+
         var constraints = CreateArgumentConstraints(parsedExpression.ArgumentsExpressions);
         var rule = new MethodExpressionCallRule(parsedExpression, constraints);
 
@@ -46,11 +62,20 @@ public class Mock<T> where T : class
         configurationBuilder.Invoke(ruleBuilder);
 
         rules.Add(rule);
+        return this;
+    }
+
+    public Mock<T> WithPropertySetter<TMember>(Expression<Func<T, TMember>> expression, Action<IPropertySetterWithArgumentConstraintConfiguration<TMember>> configurationBuilder)
+    {
+        var parsedExpression = MethodExpressionParser.ParseExpression(expression);
+        var (success, failMessage) = MethodInterceptorValidator.CanBeInterceptedForObject(parsedExpression.Method, typeof(T));
+
+        if (!success) throw new ConfigurationException(failMessage);
 
         return this;
     }
 
-    public T Build()
+public T Build()
     {
         return fakeObject;
     }
@@ -61,7 +86,7 @@ public class Mock<T> where T : class
 
         if (result.IsSuccess) return result.ProxyObject!;
 
-        throw new InvalidOperationException();
+        throw new ConfigurationException();
     }
 
     private static IArgumentConstraint[] CreateArgumentConstraints(ParsedArgumentExpression[] argumentsExpressions)
@@ -70,49 +95,4 @@ public class Mock<T> where T : class
 
         return argumentsExpressions.Select(argumentConstraintCreator.CreateArgumentConstraintFromArgumentExpression).ToArray();
     }
-}
-
-class ReturnValueConfigurationBuilder<TMember>(MethodExpressionCallRule rule) : IReturnValueConfiguration<TMember>
-{
-    private readonly MethodExpressionCallRule rule = rule;
-
-    public void Returns(TMember value)
-    {
-        rule.SetApplyAction((proxyObj) => proxyObj.SetReturnValue(value));
-    }
-
-    public void Returns(Func<TMember> valueProvider)
-    {
-        rule.SetApplyAction((proxyObj) => proxyObj.SetReturnValue(valueProvider()));
-    }
-
-    public void Throws(Func<Exception> exceptionFactory)
-    {
-        rule.SetApplyAction((_) => throw exceptionFactory());
-    }
-
-    public void Throws<TException>() where TException : Exception, new()
-    {
-        rule.SetApplyAction((_) => throw new TException());
-    }
-}
-
-public interface IReturnValueConfiguration<TMember> : IThrowExceptionConfiguration
-{
-    void Returns(TMember value);
-    void Returns(Func<TMember> valueProvider);
-}
-
-public interface IVoidConfiguration : IThrowExceptionConfiguration;
-
-public interface IThrowExceptionConfiguration
-{
-    void Throws(Func<Exception> exceptionFactory);
-    void Throws<TException>() where TException : Exception, new();
-}
-
-interface IInterceptionRule
-{
-    bool CanBeAppliedTo(IFakeObjectCall fakeObjectCall);
-    void Apply(IFakeObjectCall fakeObjectCall);
 }

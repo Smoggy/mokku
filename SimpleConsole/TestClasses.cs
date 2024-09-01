@@ -13,6 +13,8 @@ public class Foo
     {
         return str;
     }
+
+    public virtual string Property { get; set; }
 }
 
 public class Bar(string Name, int Age, Foo Foo)
@@ -20,6 +22,8 @@ public class Bar(string Name, int Age, Foo Foo)
     public string Name { get; } = Name;
     public int Age { get; } = Age;
     public Foo Foo { get; } = Foo;
+
+    public virtual string? Property { get; set; }
 }
 
 public class DerivedFoo : Foo
@@ -29,6 +33,18 @@ public class DerivedFoo : Foo
         return $"derived - {str}";
     }
 }
+
+public interface GenericBase<T>
+{
+    public T Method(T val);
+}
+
+public class GenericDeviced<T> : GenericBase<T>
+{
+    public virtual T Method(T val) => val;
+}
+
+
 
 public interface ITest
 {

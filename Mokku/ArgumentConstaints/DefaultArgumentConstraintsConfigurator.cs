@@ -1,6 +1,4 @@
-﻿using Mokku.ArgumentConstaints;
-
-namespace Mokku;
+﻿namespace Mokku.ArgumentConstaints;
 
 internal class DefaultArgumentConstraintsConfigurator<T>(Action<IArgumentConstraint> onConstraintCreatedCallback) : IArgumentConstraintsConfigurator<T>
 {

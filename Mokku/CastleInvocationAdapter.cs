@@ -25,6 +25,11 @@ class CastleInvocationAdapter : IFakeObjectCall
         _invocation.Proceed();
     }
 
+    public void SetArgumentValue(int index, object? value)
+    {
+        _invocation.SetArgumentValue(index, value);
+    }
+
     public void SetReturnValue(object? value)
     {
         _invocation.ReturnValue = value;

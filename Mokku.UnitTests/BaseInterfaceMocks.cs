@@ -47,4 +47,23 @@ public class BaseInterfaceMocks
 
         exception.Should().BeOfType<FieldAccessException>();
     }
+
+    [Fact]
+    public void ShouldInvokeAdditionalActions()
+    {
+        var firstActionClosure = false;
+        var secondActionClosure = 1;
+
+        var mock = new Mock<IFoo>()
+            .WithCallTo(x => x.Bar(),
+                x => x.Invokes(() => firstActionClosure = true)
+                       .Invokes(() => ++secondActionClosure)
+                       .DoesNothing())
+            .Build();
+
+        mock.Bar();
+
+        Assert.True(firstActionClosure);
+        Assert.Equal(2, secondActionClosure);
+    }
 }

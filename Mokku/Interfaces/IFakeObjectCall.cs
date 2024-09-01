@@ -8,5 +8,6 @@ interface IFakeObjectCall
     object?[] Arguments { get; }
     object FakeObject { get; }
     void SetReturnValue(object? value);
+    void SetArgumentValue(int index, object? value);
     void CallBaseMethod();
 }

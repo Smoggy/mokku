@@ -6,15 +6,25 @@ using static System.Console;
 
 WriteLine("Hello, World!");
 
-var mock = new Mock<ITest>()
-    .WithCallTo(x => x.StringInput(""), configuration => configuration.Throws<ArgumentException>())
-    .WithCallTo(x => x.BoolReturn(), configuration => configuration.Returns(true))
+var wasCalled = false;
+
+var mock = new Mock<DerivedFoo>()
+    .WithCallTo(x => x.VirtualString(Is.Any<string>()), configuration => configuration.Invokes(() => wasCalled = true))
     .Build();
 
-mock.BoolReturn();
+mock.VirtualString("a"); 
 
-var fake = A.Fake<ITest>();
-A.CallTo(() => fake.StringInput(A<string>.Ignored)).DoesNothing();
-A.CallTo(() => fake.BoolReturn("")).ReturnsLazily((string t) => true);
+
+var wasCalled1 = false;
+
+var mock1 = new Mock<GenericDeviced<int>>()
+    .WithCallTo(x => x.Method(Is.Any<int>()), c => c.Throws<Exception>())
+    .Build();
+
+var res = mock1.Method(1);
+
+var a = A.Fake<Foo>();
+
+A.CallTo(() => a.VirtualString(""));
 
 ReadLine();

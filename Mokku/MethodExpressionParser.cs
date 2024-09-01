@@ -15,6 +15,7 @@ static class MethodExpressionParser
         return expression.Body switch
         {
             MethodCallExpression methodExpression => ParseMethodCallExpression(methodExpression),
+            MemberExpression memberExpression => ParsePropertyCallExpression(memberExpression),
             _ => throw new InvalidOperationException()
         };
     }

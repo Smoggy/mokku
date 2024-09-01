@@ -1,7 +1,6 @@
-﻿using Mokku.ArgumentConstaints;
-using System.Linq.Expressions;
+﻿using System.Linq.Expressions;
 
-namespace Mokku;
+namespace Mokku.ArgumentConstaints;
 
 internal class ArgumentConstraintCreator(IConstraintCatchService service)
 {
@@ -10,7 +9,7 @@ internal class ArgumentConstraintCreator(IConstraintCatchService service)
     {
         if (IsParamArgumentsExpression(expression))
         {
-            return CreateParamsArgumentConstraintFromExpression((NewArrayExpression) expression.ArgumentExpression);
+            return CreateParamsArgumentConstraintFromExpression((NewArrayExpression)expression.ArgumentExpression);
         }
 
         var constraint = CreateArgumentConstraintFromExpression(expression.ArgumentExpression, expression.ParameterInfo.ParameterType);
@@ -18,11 +17,11 @@ internal class ArgumentConstraintCreator(IConstraintCatchService service)
         return constraint;
     }
 
-    private IArgumentConstraint CreateParamsArgumentConstraintFromExpression(NewArrayExpression expression)
+    private AgregatedArgumentConsraint CreateParamsArgumentConstraintFromExpression(NewArrayExpression expression)
     {
         var constraints = new List<IArgumentConstraint>();
 
-        foreach(var exp in expression.Expressions)
+        foreach (var exp in expression.Expressions)
         {
             constraints.Add(CreateArgumentConstraintFromExpression(exp, exp.Type));
         }

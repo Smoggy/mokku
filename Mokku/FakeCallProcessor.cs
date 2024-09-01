@@ -1,4 +1,5 @@
 ﻿using Mokku.Extensions;
+using Mokku.InterceptionRules;
 using Mokku.Interfaces;
 
 namespace Mokku;
@@ -27,6 +28,8 @@ class FakeCallProcessor(List<IInterceptionRule> rules) : IFakeCallProcessor
             bestSuitingRule.Apply(fakeObjectCall);
             return;
         }
+
+
 
         // TODO move to some objects
         fakeObjectCall.SetReturnValue(fakeObjectCall.MethodInfo.ReturnType.GetDefaultValue());

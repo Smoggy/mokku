@@ -19,12 +19,12 @@ public class MockOptionsTests
     [Fact]
     public void MockShouldImplementAdditionalInterfacesWhenPassingType()
     {
-        var mock = new Mock<TestClass>(x => x.ShouldImplement(typeof(IFoo)).ShouldImplement(typeof(IConvertible))).Build();
+        var mock = new Mock<TestBaseClass>(x => x.ShouldImplement(typeof(IFoo)).ShouldImplement(typeof(IConvertible))).Build();
 
         mock.Should()
             .BeAssignableTo<IFoo>().And
             .BeAssignableTo<IConvertible>().And
-            .BeAssignableTo<TestClass>();
+            .BeAssignableTo<TestBaseClass>();
     }
 
     [Fact]
@@ -41,20 +41,20 @@ public class MockOptionsTests
     [Fact]
     public void MockShouldImplementAdditionalInterfacesWhenPassingGenerics()
     {
-        var mock = new Mock<TestClass>(x => x.ShouldImplement<IFoo>().ShouldImplement<IConvertible>()).Build();
+        var mock = new Mock<TestBaseClass>(x => x.ShouldImplement<IFoo>().ShouldImplement<IConvertible>()).Build();
 
         mock.Should()
             .BeAssignableTo<IFoo>().And
             .BeAssignableTo<IConvertible>().And
-            .BeAssignableTo<TestClass>();
+            .BeAssignableTo<TestBaseClass>();
     }
 
     [Fact]
     public void ShouldThrowAnExceptionIfAdditionalInterfaceIsClass()
     {
-        var mock = new Mock<TestClass>(x => x.ShouldImplement<IFoo>().ShouldImplement<IConvertible>()).Build();
+        var mock = new Mock<TestBaseClass>(x => x.ShouldImplement<IFoo>().ShouldImplement<IConvertible>()).Build();
 
-        var exception = Record.Exception(() => new Mock<IFoo>(x => x.ShouldImplement<TestClass>()).Build());
+        var exception = Record.Exception(() => new Mock<IFoo>(x => x.ShouldImplement<TestBaseClass>()).Build());
 
         exception.Should().BeOfType<ArgumentException>();
     }
