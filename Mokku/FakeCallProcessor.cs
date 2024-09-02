@@ -29,8 +29,6 @@ class FakeCallProcessor(List<IInterceptionRule> rules) : IFakeCallProcessor
             return;
         }
 
-
-
         // TODO move to some objects
         fakeObjectCall.SetReturnValue(fakeObjectCall.MethodInfo.ReturnType.GetDefaultValue());
     }

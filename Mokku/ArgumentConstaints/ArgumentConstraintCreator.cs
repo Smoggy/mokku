@@ -12,9 +12,7 @@ internal class ArgumentConstraintCreator(IConstraintCatchService service)
             return CreateParamsArgumentConstraintFromExpression((NewArrayExpression)expression.ArgumentExpression);
         }
 
-        var constraint = CreateArgumentConstraintFromExpression(expression.ArgumentExpression, expression.ParameterInfo.ParameterType);
-
-        return constraint;
+        return CreateArgumentConstraintFromExpression(expression.ArgumentExpression, expression.ParameterInfo.ParameterType);
     }
 
     private AgregatedArgumentConsraint CreateParamsArgumentConstraintFromExpression(NewArrayExpression expression)

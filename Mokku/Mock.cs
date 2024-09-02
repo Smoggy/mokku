@@ -9,14 +9,12 @@ namespace Mokku;
 
 public class Mock<T> where T : class
 {
-    private readonly T fakeObject;
     private readonly IProxyOptions proxyOptions;
     private readonly List<IInterceptionRule> rules = [];
 
     public Mock()
     {
         proxyOptions = ProxyOptions.Default;
-        fakeObject = (T)Create(typeof(T));
     }
 
     public Mock(Action<IMockOptions<T>> optionsBuilder)
@@ -24,8 +22,6 @@ public class Mock<T> where T : class
         proxyOptions = new ProxyOptions();
         var mockOptions = new MockOptions<T>(proxyOptions);
         optionsBuilder.Invoke(mockOptions);
-
-        fakeObject = (T)Create(typeof(T));
     }
 
     public Mock<T> WithCallTo(Expression<Action<T>> methodCallExpression, Action<IVoidConfiguration> configurationBuilder)
@@ -68,16 +64,24 @@ public class Mock<T> where T : class
     public Mock<T> WithPropertySetter<TMember>(Expression<Func<T, TMember>> expression, Action<IPropertySetterWithArgumentConstraintConfiguration<TMember>> configurationBuilder)
     {
         var parsedExpression = MethodExpressionParser.ParseExpression(expression);
-        var (success, failMessage) = MethodInterceptorValidator.CanBeInterceptedForObject(parsedExpression.Method, typeof(T));
 
+        var (success, failMessage) = MethodInterceptorValidator.CanBeInterceptedForObject(parsedExpression.Method, typeof(T));
         if (!success) throw new ConfigurationException(failMessage);
+
+        var updatedParsedExpression = PropertySetterHelper.CreateSetterExpressionFromGetter<TMember>(parsedExpression);
+        var constraints = CreateArgumentConstraints(updatedParsedExpression.ArgumentsExpressions);
+        var rule = new PropertySetterCallRule(updatedParsedExpression, constraints);
+
+        var ruleBuilder = new PropertySetterConfigurationBuilder<TMember>(rule);
+        configurationBuilder.Invoke(ruleBuilder);
+        rules.Add(rule);
 
         return this;
     }
 
-public T Build()
+    public T Build()
     {
-        return fakeObject;
+        return (T)Create(typeof(T));
     }
 
     private object Create(Type proxyType)
@@ -89,10 +93,10 @@ public T Build()
         throw new ConfigurationException();
     }
 
-    private static IArgumentConstraint[] CreateArgumentConstraints(ParsedArgumentExpression[] argumentsExpressions)
+    private static List<IArgumentConstraint> CreateArgumentConstraints(ParsedArgumentExpression[] argumentsExpressions)
     {
         var argumentConstraintCreator = new ArgumentConstraintCreator(new ConstraintCatchService());
 
-        return argumentsExpressions.Select(argumentConstraintCreator.CreateArgumentConstraintFromArgumentExpression).ToArray();
+        return argumentsExpressions.Select(argumentConstraintCreator.CreateArgumentConstraintFromArgumentExpression).ToList();
     }
 }

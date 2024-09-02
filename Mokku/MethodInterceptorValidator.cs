@@ -2,7 +2,7 @@
 
 namespace Mokku;
 /// <summary>
-/// Validates if method can be intercepted
+/// Validates if a method can be intercepted
 /// </summary>
 internal static class MethodInterceptorValidator
 {
@@ -20,7 +20,6 @@ internal static class MethodInterceptorValidator
         if (method.IsFinal || !method.IsVirtual)
         {
             return "Non-virtuals methods or properties can't be mocked.";
-
         }
 
         if (method.IsStatic)
@@ -38,5 +37,5 @@ internal static class MethodInterceptorValidator
     }
 
     private static MethodInfo GetMethodForActualType(MethodInfo method, Type targetType)
-        => ProxyMethodManager.FindMethodThatWillBeInvoked(targetType, method)!;
+        => ProxyMethodManager.FindMethodThatWillBeInvoked(targetType, method) ?? method;
 }

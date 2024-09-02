@@ -4,6 +4,9 @@ using System.Reflection;
 
 namespace Mokku;
 
+/// <summary>
+/// Incapculates castle proxy invocation of a proxied method
+/// </summary>
 class CastleInvocationAdapter : IFakeObjectCall
 {
     private readonly IInvocation _invocation;

@@ -5,9 +5,7 @@ VisualStudioVersion = 17.8.34322.80
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Mokku", "Mokku\Mokku.csproj", "{F60E3680-0215-46DB-B460-5DC5ECEF66B5}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SimpleConsole", "SimpleConsole\SimpleConsole.csproj", "{9E1F3727-CBE4-4DCC-BBE2-A6870CABB516}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mokku.UnitTests", "Mokku.UnitTests\Mokku.UnitTests.csproj", "{D6C59332-1998-4464-B561-195CBCA5D55E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Mokku.UnitTests", "Mokku.UnitTests\Mokku.UnitTests.csproj", "{D6C59332-1998-4464-B561-195CBCA5D55E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -19,10 +17,6 @@ Global
 		{F60E3680-0215-46DB-B460-5DC5ECEF66B5}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F60E3680-0215-46DB-B460-5DC5ECEF66B5}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F60E3680-0215-46DB-B460-5DC5ECEF66B5}.Release|Any CPU.Build.0 = Release|Any CPU
-		{9E1F3727-CBE4-4DCC-BBE2-A6870CABB516}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{9E1F3727-CBE4-4DCC-BBE2-A6870CABB516}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{9E1F3727-CBE4-4DCC-BBE2-A6870CABB516}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{9E1F3727-CBE4-4DCC-BBE2-A6870CABB516}.Release|Any CPU.Build.0 = Release|Any CPU
 		{D6C59332-1998-4464-B561-195CBCA5D55E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{D6C59332-1998-4464-B561-195CBCA5D55E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D6C59332-1998-4464-B561-195CBCA5D55E}.Release|Any CPU.ActiveCfg = Release|Any CPU

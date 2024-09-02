@@ -4,9 +4,9 @@ using System.Linq.Expressions;
 
 namespace Mokku.RuleConfigurations;
 
-internal class PropertySetterConfiguration<TMember>(MethodExpressionCallRule rule) : IPropertySetterConfiguration<TMember>, IAfterCallConfiguration<IPropertySetterConfiguration<TMember>>
+internal class PropertySetterConfigurationBuilder<TMember>(PropertySetterCallRule rule) : IPropertySetterWithArgumentConstraintConfiguration<TMember>, IAfterCallConfiguration<IPropertySetterConfiguration<TMember>>
 {
-    private readonly MethodExpressionCallRule rule = rule;
+    private readonly PropertySetterCallRule rule = rule;
 
     public IPropertySetterConfiguration<TMember> When(TMember value)
     {
@@ -17,14 +17,10 @@ internal class PropertySetterConfiguration<TMember>(MethodExpressionCallRule rul
     public IPropertySetterConfiguration<TMember> When(Expression<Func<TMember>> constraintExpression)
     {
         var argumentConstraintCreator = new ArgumentConstraintCreator(new ConstraintCatchService());
-
-        var parameter = rule.Expression.Method.GetParameters().First();
-
-        var argumentExpression = new ParsedArgumentExpression(constraintExpression, parameter);
-
+        var argumentExpression = new ParsedArgumentExpression(constraintExpression.Body, rule.GetParameterInfo());
         var constraint = argumentConstraintCreator.CreateArgumentConstraintFromArgumentExpression(argumentExpression);
 
-        
+        rule.OverrideArgumentConstraint(constraint);
 
         return this;
     }

@@ -4,6 +4,9 @@ using System.Reflection;
 
 namespace Mokku;
 
+/// <summary>
+/// Responsible for creation castle proxy
+/// </summary>
 internal static class CastleDynamicProxyCreator
 {
     private static readonly ProxyGenerator proxyGenerator = new();
@@ -19,6 +22,7 @@ internal static class CastleDynamicProxyCreator
             if (proxyType.IsInterface)
             {
                 Type[] a = [proxyType, .. additionalInterfaces];
+                // we can create it with CreateClassProxy as well, but seems like this method is faster
                 proxy = proxyGenerator.CreateInterfaceProxyWithoutTarget(proxyType, [proxyType, .. additionalInterfaces], options, new ProxyInterceptor(fakeCallProcessorProvider));
             }
             else
@@ -44,6 +48,7 @@ internal static class CastleDynamicProxyCreator
     }
 }
 
+// Custom Hook that intercepts every method
 internal class InterceptEverythingHook : IProxyGenerationHook
 {
     private static readonly int HashCode = typeof(InterceptEverythingHook).GetHashCode();
