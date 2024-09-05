@@ -27,7 +27,7 @@ internal class PropertySetterConfigurationBuilder<TMember>(PropertySetterCallRul
 
     public IAfterCallConfiguration<IPropertySetterConfiguration<TMember>> DoesNothing()
     {
-        rule.SetApplyAction(MethodExpressionCallRule.DefaultApplyAction);
+        rule.SetApplyAction(BaseInterceptionRule.DefaultApplyAction);
         return this;
     }
 

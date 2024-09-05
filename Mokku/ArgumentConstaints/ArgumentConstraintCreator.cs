@@ -2,9 +2,14 @@
 
 namespace Mokku.ArgumentConstaints;
 
+/// <summary>
+/// Responsible for creation of the argument constraints
+/// </summary>
+/// <param name="service">Helper service that allows to execute argument constraint expression</param>
 internal class ArgumentConstraintCreator(IConstraintCatchService service)
 {
     private readonly IConstraintCatchService _catchService = service;
+
     public IArgumentConstraint CreateArgumentConstraintFromArgumentExpression(ParsedArgumentExpression expression)
     {
         if (IsParamArgumentsExpression(expression))
@@ -31,13 +36,9 @@ internal class ArgumentConstraintCreator(IConstraintCatchService service)
     {
         var constraint = _catchService.TryCatchTheConstraintFromExpression(expression);
 
-        if (constraint is ITypedArgumentConstraint typeConstraint)
+        if (constraint is ITypedArgumentConstraint typeConstraint && !parameterType.IsAssignableFrom(typeConstraint.ArgumentType))
         {
-            if (!parameterType.IsAssignableFrom(typeConstraint.ArgumentType))
-            {
-                // TODO create exception type
-                throw new Exception();
-            }
+            throw new ArgumentException("");
         }
 
         return constraint;

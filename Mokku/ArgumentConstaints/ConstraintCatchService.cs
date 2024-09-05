@@ -3,6 +3,14 @@ using System.Reflection;
 
 namespace Mokku.ArgumentConstaints;
 
+/// <summary>
+/// The logic here is not straightforward so here's the detailed explanation.
+/// During method configuration we can write the constraint like this Is.A<string>.That.Matches(x => x.StartsWith("some value")) etc
+/// They are expression type and we need to compile them and get the predicate that will be used in the constraint
+/// implementation of IArgumentConstraintsConfigurator has a callback that is called when it is invoked
+/// here we first update value of that callback, it is just Add method of a list, and in this way we catch the result of the IArgumentConstraintsConfigurator execution
+/// this result can be instance of IArgumentConstraint or some constant value
+/// </summary>
 internal class ConstraintCatchService : IConstraintCatchService
 {
     private static readonly Action<IArgumentConstraint> OnUnathorizedCatchAttemptAction = (_) => throw new InvalidOperationException();
@@ -33,6 +41,8 @@ internal class ConstraintCatchService : IConstraintCatchService
         return catchedConstraints.Count == 1 ? catchedConstraints[0] : throw new Exception("Too many constraints");
     }
 
+    // for some expressions we can easily get value without compiling them
+    // this list is probably not full but it's more to show the idea
     private static bool TryGetValueWithoutCompile(Expression? expression, out object? value)
     {
         if (expression is null)

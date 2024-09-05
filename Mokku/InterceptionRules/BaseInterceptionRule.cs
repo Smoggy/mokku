@@ -4,7 +4,7 @@ using Mokku.Interfaces;
 
 namespace Mokku.InterceptionRules;
 
-internal class BaseInterceptionRule(ParsedExpression expression, List<IArgumentConstraint> argumentConstraints) : IInterceptionRule
+internal abstract class BaseInterceptionRule(ParsedExpression expression, List<IArgumentConstraint> argumentConstraints) : IInterceptionRule
 {
     public static readonly Action<IFakeObjectCall> DefaultApplyAction = call => call.SetReturnValue(call.MethodInfo.ReturnType.GetDefaultValue());
     protected Action<IFakeObjectCall> _applyAction = DefaultApplyAction;

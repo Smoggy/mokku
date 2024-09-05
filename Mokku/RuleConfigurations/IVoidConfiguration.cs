@@ -4,4 +4,5 @@ public interface IVoidConfiguration :
     IDoNothingConfiguration<IVoidConfiguration>,
     IThrowExceptionConfiguration<IVoidConfiguration>,
     IRefAndOutArgumentsConfiguration<IVoidConfiguration>,
-    ICallbackConfiguration<IVoidConfiguration>;
+    ICallbackConfiguration<IVoidConfiguration>,
+    IRuleConfiguration;

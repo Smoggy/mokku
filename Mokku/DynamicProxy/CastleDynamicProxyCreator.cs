@@ -2,7 +2,7 @@
 using Mokku.Interfaces;
 using System.Reflection;
 
-namespace Mokku;
+namespace Mokku.DynamicProxy;
 
 /// <summary>
 /// Responsible for creation castle proxy
@@ -32,14 +32,15 @@ internal static class CastleDynamicProxyCreator
                     return new("Sealed type can't be mocked");
                 }
 
-                proxy =  proxyGenerator.CreateClassProxy(
+                proxy = proxyGenerator.CreateClassProxy(
                         proxyType,
                         [.. additionalInterfaces],
                         options,
                         arguments,
                         new ProxyInterceptor(fakeCallProcessorProvider));
             }
-        } catch (Exception ex)
+        }
+        catch (Exception ex)
         {
             return new(ex.Message);
         }

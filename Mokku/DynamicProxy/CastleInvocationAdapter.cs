@@ -2,7 +2,7 @@
 using Mokku.Interfaces;
 using System.Reflection;
 
-namespace Mokku;
+namespace Mokku.DynamicProxy;
 
 /// <summary>
 /// Incapculates castle proxy invocation of a proxied method

@@ -2,9 +2,9 @@
 
 namespace Mokku.RuleConfigurations;
 
-class ReturnValueConfigurationBuilder<TMember>(MethodExpressionCallRule rule) : IReturnValueConfiguration<TMember>, IAfterCallWithRefAndOutArgumentsConfiguration<IReturnValueConfiguration<TMember>>
+class ReturnValueConfigurationBuilder<TMember>(MethodCallRule rule) : IReturnValueConfiguration<TMember>, IAfterCallWithRefAndOutArgumentsConfiguration<IReturnValueConfiguration<TMember>>
 {
-    private readonly MethodExpressionCallRule rule = rule;
+    private readonly MethodCallRule rule = rule;
 
     public IAfterCallWithRefAndOutArgumentsConfiguration<IReturnValueConfiguration<TMember>> Returns(TMember value)
     {
@@ -32,7 +32,7 @@ class ReturnValueConfigurationBuilder<TMember>(MethodExpressionCallRule rule) : 
 
     public IAfterCallConfiguration<IReturnValueConfiguration<TMember>> DoesNothing()
     {
-        rule.SetApplyAction(MethodExpressionCallRule.DefaultApplyAction);
+        rule.SetApplyAction(BaseInterceptionRule.DefaultApplyAction);
         return this;
     }
 

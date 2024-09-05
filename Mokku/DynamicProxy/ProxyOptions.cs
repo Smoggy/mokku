@@ -1,7 +1,10 @@
 ﻿using Mokku.Interfaces;
 
-namespace Mokku;
+namespace Mokku.DynamicProxy;
 
+/// <summary>
+/// Options that will be passed to proxy creator
+/// </summary>
 internal class ProxyOptions : IProxyOptions
 {
     private readonly List<Type> _additionalInterfaces = [];

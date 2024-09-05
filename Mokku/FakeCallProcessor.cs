@@ -4,7 +4,12 @@ using Mokku.Interfaces;
 
 namespace Mokku;
 
-class FakeCallProcessor(List<IInterceptionRule> rules) : IFakeCallProcessor
+/// <summary>
+/// Processes logic for intercepted call
+/// Tries to find most sutable rule or returns default value
+/// </summary>
+/// <param name="rules"></param>
+internal class FakeCallProcessor(List<IInterceptionRule> rules) : IFakeCallProcessor
 {
     private readonly List<IInterceptionRule> allRules = rules;
 
@@ -29,7 +34,7 @@ class FakeCallProcessor(List<IInterceptionRule> rules) : IFakeCallProcessor
             return;
         }
 
-        // TODO move to some objects
+        // we don't find any rule and need to set the default value
         fakeObjectCall.SetReturnValue(fakeObjectCall.MethodInfo.ReturnType.GetDefaultValue());
     }
 }

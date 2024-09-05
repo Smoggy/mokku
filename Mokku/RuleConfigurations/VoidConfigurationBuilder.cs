@@ -2,9 +2,9 @@
 
 namespace Mokku.RuleConfigurations;
 
-internal class VoidConfigurationBuilder(MethodExpressionCallRule rule) : IVoidConfiguration, IAfterCallConfiguration<IVoidConfiguration>
+internal class VoidConfigurationBuilder(MethodCallRule rule) : IVoidConfiguration, IAfterCallConfiguration<IVoidConfiguration>
 {
-    private readonly MethodExpressionCallRule rule = rule;
+    private readonly MethodCallRule rule = rule;
 
     public IAfterCallConfiguration<IVoidConfiguration> Throws(Func<Exception> exceptionFactory)
     {
@@ -20,7 +20,7 @@ internal class VoidConfigurationBuilder(MethodExpressionCallRule rule) : IVoidCo
 
     public IAfterCallConfiguration<IVoidConfiguration> DoesNothing()
     {
-        rule.SetApplyAction(MethodExpressionCallRule.DefaultApplyAction);
+        rule.SetApplyAction(MethodCallRule.DefaultApplyAction);
         return this;
     }
 

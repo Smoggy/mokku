@@ -1,4 +1,4 @@
-﻿using Mokku.ArgumentConstaints;
+﻿using Mokku.DynamicProxy;
 using Mokku.Exceptions;
 using Mokku.InterceptionRules;
 using Mokku.Interfaces;
@@ -9,6 +9,7 @@ namespace Mokku;
 
 public class Mock<T> where T : class
 {
+    private readonly IRuleBuilder _ruleBuilder = ServicesContainer.Resolve<IRuleBuilder>();
     private readonly IProxyOptions proxyOptions;
     private readonly List<IInterceptionRule> rules = [];
 
@@ -24,57 +25,29 @@ public class Mock<T> where T : class
         optionsBuilder.Invoke(mockOptions);
     }
 
-    public Mock<T> WithCallTo(Expression<Action<T>> methodCallExpression, Action<IVoidConfiguration> configurationBuilder)
+    public Mock<T> WithCallTo(Expression<Action<T>> expression, Action<IVoidConfiguration> configurationBuilder)
     {
-        var parsedExpression = MethodExpressionParser.ParseExpression(methodCallExpression);
+        var parsedExpression = CreateParsedExpression(expression);
 
-        var (success, failMessage) = MethodInterceptorValidator.CanBeInterceptedForObject(parsedExpression.Method, typeof(T));
-
-        if (!success) throw new ConfigurationException(failMessage);
-
-        var constraints = CreateArgumentConstraints(parsedExpression.ArgumentsExpressions);
-
-        var rule = new MethodExpressionCallRule(parsedExpression, constraints);
-
-        configurationBuilder.Invoke(new VoidConfigurationBuilder(rule));
-
-        rules.Add(rule);
+        rules.Add(_ruleBuilder.BuildVoidMethodCallRule(parsedExpression, configurationBuilder));
 
         return this;
     }
 
     public Mock<T> WithCallTo<TMember>(Expression<Func<T, TMember>> expression, Action<IReturnValueConfiguration<TMember>> configurationBuilder)
     {
-        var parsedExpression = MethodExpressionParser.ParseExpression(expression);
+        var parsedExpression = CreateParsedExpression(expression);
 
-        var (success, failMessage) = MethodInterceptorValidator.CanBeInterceptedForObject(parsedExpression.Method, typeof(T));
+        rules.Add(_ruleBuilder.BuildReturnMethodCallRule(parsedExpression, configurationBuilder));
 
-        if (!success) throw new ConfigurationException(failMessage);
-
-        var constraints = CreateArgumentConstraints(parsedExpression.ArgumentsExpressions);
-        var rule = new MethodExpressionCallRule(parsedExpression, constraints);
-
-        var ruleBuilder = new ReturnValueConfigurationBuilder<TMember>(rule);
-        configurationBuilder.Invoke(ruleBuilder);
-
-        rules.Add(rule);
         return this;
     }
 
     public Mock<T> WithPropertySetter<TMember>(Expression<Func<T, TMember>> expression, Action<IPropertySetterWithArgumentConstraintConfiguration<TMember>> configurationBuilder)
     {
-        var parsedExpression = MethodExpressionParser.ParseExpression(expression);
+        var parsedExpression = CreateParsedExpression(expression);
 
-        var (success, failMessage) = MethodInterceptorValidator.CanBeInterceptedForObject(parsedExpression.Method, typeof(T));
-        if (!success) throw new ConfigurationException(failMessage);
-
-        var updatedParsedExpression = PropertySetterHelper.CreateSetterExpressionFromGetter<TMember>(parsedExpression);
-        var constraints = CreateArgumentConstraints(updatedParsedExpression.ArgumentsExpressions);
-        var rule = new PropertySetterCallRule(updatedParsedExpression, constraints);
-
-        var ruleBuilder = new PropertySetterConfigurationBuilder<TMember>(rule);
-        configurationBuilder.Invoke(ruleBuilder);
-        rules.Add(rule);
+        rules.Add(_ruleBuilder.BuildPropertySetterCallRule(parsedExpression, configurationBuilder));
 
         return this;
     }
@@ -93,10 +66,12 @@ public class Mock<T> where T : class
         throw new ConfigurationException();
     }
 
-    private static List<IArgumentConstraint> CreateArgumentConstraints(ParsedArgumentExpression[] argumentsExpressions)
+    private static ParsedExpression CreateParsedExpression(LambdaExpression expression)
     {
-        var argumentConstraintCreator = new ArgumentConstraintCreator(new ConstraintCatchService());
+        var parsedExpression = MethodExpressionParser.ParseExpression(expression);
+        var (success, failMessage) = MethodInterceptorValidator.CanBeInterceptedForObject(parsedExpression.Method, typeof(T));
+        if (!success || parsedExpression == null) throw new ConfigurationException(failMessage);
 
-        return argumentsExpressions.Select(argumentConstraintCreator.CreateArgumentConstraintFromArgumentExpression).ToList();
+        return parsedExpression;
     }
 }

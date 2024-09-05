@@ -1,4 +1,6 @@
-﻿namespace Mokku.UnitTests;
+﻿using Castle.Components.DictionaryAdapter;
+
+namespace Mokku.UnitTests;
 
 public interface IFoo
 {
@@ -14,7 +16,16 @@ public interface IFoo
     Task<string> AsyncMethod();
 }
 
-public class TestBaseClass
+public interface IGeneric<T>
+{
+    void Bar(T obj);
+    T ReturnMethod();
+    T Property { get; set; }
+    T ReadonlyProperty { get; }
+    Task<T> AsyncMethod();
+}
+
+    public class TestBaseClass
 {
 #pragma warning disable CA1822 // Mark members as static
     public void NonVirtualMethod(int _)
@@ -47,6 +58,18 @@ public class TestDerivedClass : TestBaseClass
     {
         base.ActionMethod(arg);
     }
+}
+
+public abstract class GenericClass<T>
+{
+    public abstract void Bar(T obj);
+    public virtual T ReturnMethod(T val)
+    {
+        return val;
+    }
+    public abstract T Property { get; set; }
+    public abstract T ReadonlyProperty { get; }
+    public abstract  Task<T> AsyncMethod();
 }
 
 public sealed class SealedClass

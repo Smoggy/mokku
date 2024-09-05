@@ -3,7 +3,7 @@ using Mokku.Exceptions;
 
 namespace Mokku.UnitTests;
 
-public class InterfaceMockConfigurationTests
+public class InterfaceMockTests
 {
     [Fact]
     public void ShouldReturnCorrectValueWhenReturnValueIsProvided()

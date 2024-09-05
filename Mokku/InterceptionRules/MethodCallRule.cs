@@ -4,7 +4,7 @@ using System.Reflection;
 
 namespace Mokku.InterceptionRules;
 
-internal class MethodExpressionCallRule(ParsedExpression expression, List<IArgumentConstraint> argumentConstraints) : BaseInterceptionRule(expression, argumentConstraints)
+internal class MethodCallRule(ParsedExpression expression, List<IArgumentConstraint> argumentConstraints) : BaseInterceptionRule(expression, argumentConstraints)
 {
     private static readonly Func<object?[]> DefaultRefAndOutArgumentsSetter = () => [];
     private Func<object?[]> refAndOutArgumentsSetter = DefaultRefAndOutArgumentsSetter;

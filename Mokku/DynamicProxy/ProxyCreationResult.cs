@@ -1,4 +1,4 @@
-﻿namespace Mokku;
+﻿namespace Mokku.DynamicProxy;
 
 internal class ProxyCreationResult
 {
